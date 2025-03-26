@@ -1,20 +1,22 @@
 package io.hhplus.tdd.point;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
+
+import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import io.hhplus.tdd.database.PointHistoryTable;
 import io.hhplus.tdd.database.UserPointTable;
-import lombok.RequiredArgsConstructor;
 
 @ExtendWith(MockitoExtension.class)
-@RequiredArgsConstructor
 public class PointServiceTest {
 
 	/**
@@ -30,6 +32,9 @@ public class PointServiceTest {
 	@Mock
 	private PointHistoryTable pointHistoryTable;
 	
+	@InjectMocks
+	private PointService pointService;
+	
 	@Test
 	@DisplayName("사용자 포인트 조회")
 	public void searchUser() {
@@ -44,6 +49,63 @@ public class PointServiceTest {
 		
 		// then
 		assertEquals(1000, result.point());
+		
+	}
+	
+	@Test
+	@DisplayName("사용자 포인트 충전시 최대 충전량을 초과했을때")
+	public void charge() {
+		
+		long id = 1L;
+		long amount = 4000;
+		long currentPoint = 2000;
+		
+		when(userPointTable.selectById(id)).thenReturn(new UserPoint(id, currentPoint, System.currentTimeMillis()));
+		
+		assertThrows(IllegalArgumentException.class, () -> {
+			pointService.charge(id, amount);
+		});
+		
+		
+		
+	}
+	
+	@Test
+	@DisplayName("사용자가 포인트를 사용했을때 잔액이 부족할 경우")
+	public void use() {
+		
+		long id = 1L;
+		long amount = 2000;
+		long currentPoint = 1000;
+		
+		when(userPointTable.selectById(id)).thenReturn(new UserPoint(id, currentPoint, System.currentTimeMillis()));
+		
+		assertThrows(IllegalArgumentException.class, () -> {
+			pointService.use(id, amount);
+		});
+		
+	}
+	
+	@Test
+	@DisplayName("사용자 포인트 사용 내역 조회")
+	public void history() {
+		
+		long userId = 1L;
+		
+		List<PointHistory> pointHistory = List.of(
+				new PointHistory(1L, userId, 3000, TransactionType.CHARGE, System.currentTimeMillis()),
+				new PointHistory(2L, userId, 2800, TransactionType.USE, System.currentTimeMillis())
+		);
+		
+		when(pointHistoryTable.selectAllByUserId(userId)).thenReturn(pointHistory);
+		
+		List<PointHistory> result = pointService.history(userId);
+		
+		PointHistory firstUser = result.get(0);
+		PointHistory secondUser = result.get(1);
+		
+		assertEquals(1L, firstUser.id());
+		assertEquals(2800, secondUser.amount());
 		
 	}
 	
