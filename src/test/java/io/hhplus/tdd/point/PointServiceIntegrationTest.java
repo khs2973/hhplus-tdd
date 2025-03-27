@@ -2,7 +2,6 @@ package io.hhplus.tdd.point;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
 
 import java.util.List;
 
@@ -12,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import io.hhplus.tdd.database.PointHistoryTable;
 import io.hhplus.tdd.database.UserPointTable;
 
 @SpringBootTest
@@ -46,8 +44,8 @@ public class PointServiceIntegrationTest {
 	@DisplayName("사용자 포인트 충전시 최대 충전량을 초과했을때 - 실패 케이스")
 	public void charge() {
 		
-		long amount = 4000;
-		long currentPoint = 2000;
+		long amount = 4000L;
+		long currentPoint = 2000L;
 		
 		userPointTable.insertOrUpdate(id, currentPoint);
 
@@ -61,9 +59,9 @@ public class PointServiceIntegrationTest {
 	@DisplayName("사용자 포인트 충전 - 성공 케이스")
 	public void successCharge() {
 		
-		long amount = 2000;
-		long currentPoint = 1000;
-		long sumPoint = 3000;
+		long amount = 2000L;
+		long currentPoint = 1000L;
+		long sumPoint = 3000L;
 		
 		pointService.charge(id, currentPoint);
 		
@@ -76,8 +74,8 @@ public class PointServiceIntegrationTest {
 	@DisplayName("사용자가 포인트를 사용했을때 잔액이 부족할 경우")
 	public void use() {
 		
-		long amount = 2000;
-		long currentPoint = 1000;
+		long amount = 2000L;
+		long currentPoint = 1000L;
 		
 		pointService.charge(id, currentPoint);
 		
@@ -91,9 +89,9 @@ public class PointServiceIntegrationTest {
 	@DisplayName("사용자 포인트 사용 - 성공 케이스")
 	public void successUse() {
 		
-		long amount = 1000;
-		long currentPoint = 5000;
-		long sumPoint = 4000;
+		long amount = 1000L;
+		long currentPoint = 5000L;
+		long sumPoint = 4000L;
 		
 		pointService.charge(id, currentPoint);
 		UserPoint afterUse = pointService.use(id, amount);

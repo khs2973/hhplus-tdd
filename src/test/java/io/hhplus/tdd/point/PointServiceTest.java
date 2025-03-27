@@ -57,8 +57,8 @@ public class PointServiceTest {
 	public void charge() {
 		
 		long id = 1L;
-		long amount = 4000;
-		long currentPoint = 2000;
+		long amount = 4000L;
+		long currentPoint = 2000L;
 		
 		when(userPointTable.selectById(id)).thenReturn(new UserPoint(id, currentPoint, System.currentTimeMillis()));
 		
@@ -73,9 +73,9 @@ public class PointServiceTest {
 	public void successCharge() {
 		
 		long id = 1L;
-		long amount = 2000;
-		long currentPoint = 1000;
-		long sumPoint = 3000;
+		long amount = 2000L;
+		long currentPoint = 1000L;
+		long sumPoint = 3000L;
 		
 		UserPoint beforePoint = new UserPoint(id, currentPoint, System.currentTimeMillis());
 		UserPoint afterPoint = new UserPoint(id, amount + currentPoint, System.currentTimeMillis());
@@ -93,8 +93,8 @@ public class PointServiceTest {
 	public void use() {
 		
 		long id = 1L;
-		long amount = 2000;
-		long currentPoint = 1000;
+		long amount = 2000L;
+		long currentPoint = 1000L;
 		
 		when(userPointTable.selectById(id)).thenReturn(new UserPoint(id, currentPoint, System.currentTimeMillis()));
 		
@@ -109,9 +109,9 @@ public class PointServiceTest {
 	public void successUse() {
 		
 		long id = 1L;
-		long amount = 1000;
-		long currentPoint = 5000;
-		long sumPoint = 4000;
+		long amount = 1000L;
+		long currentPoint = 5000L;
+		long sumPoint = 4000L;
 		
 		UserPoint beforePoint = new UserPoint(id, currentPoint, System.currentTimeMillis());
 		UserPoint afterPoint = new UserPoint(id, currentPoint - amount, System.currentTimeMillis());

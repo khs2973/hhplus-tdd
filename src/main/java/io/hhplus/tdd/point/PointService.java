@@ -1,6 +1,8 @@
 package io.hhplus.tdd.point;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.springframework.stereotype.Service;
 
@@ -16,6 +18,14 @@ public class PointService {
 	
 	private final PointHistoryTable pointHistoryTable;
 	
+	private final ConcurrentHashMap<Long, ReentrantLock> reentrantLock = new ConcurrentHashMap<>();
+
+	private ReentrantLock getLock(long userId) {
+		// key가 존재할 경우: 아무런 작업을 하지 않고 기존에 존재하는 key의 value를 리턴
+		// key가 존재하지 않는 경우: 람다식을 적용한 값을 해당 key에 저장한 후 newValue를 리턴
+		return reentrantLock.computeIfAbsent(userId, id -> new ReentrantLock());
+	}
+	
 	// 사용자 포인트 조회
 	public UserPoint point(Long userId) {
 		return userPointTable.selectById(userId);
@@ -24,18 +34,30 @@ public class PointService {
 	// 사용자 포인트 충전
 	public UserPoint charge(long id, long amount) {
 		
-		long maxPoint = 5000;
-		UserPoint userPoint = userPointTable.selectById(id);
+		ReentrantLock lock = getLock(id);
 		
-		if(userPoint.point() + amount > maxPoint) {
-			throw new IllegalArgumentException("포인트 최대 충전량을 초과하셨습니다.");
+		lock.lock();
+		
+		try {
+			
+			long maxPoint = 5000L;
+			UserPoint userPoint = userPointTable.selectById(id);
+			
+			if(userPoint.point() + amount > maxPoint) {
+				throw new IllegalArgumentException("포인트 최대 충전량을 초과하셨습니다.");
+			}
+			
+			UserPoint chargeUserPoint = userPointTable.insertOrUpdate(id, userPoint.point() + amount);
+			
+			pointHistoryTable.insert(id, userPoint.point() + amount, TransactionType.CHARGE, System.currentTimeMillis());
+			
+			return chargeUserPoint;
+			
+		} finally {
+			// unlock은 예외와 상관없이 무조건 실행되도록 설정
+			// lock이 해제되지 않으면 deadlock 발생
+			lock.unlock();
 		}
-		
-		UserPoint chargeUserPoint = userPointTable.insertOrUpdate(id, userPoint.point() + amount);
-		
-		pointHistoryTable.insert(id, userPoint.point() + amount, TransactionType.CHARGE, System.currentTimeMillis());
-		
-		return chargeUserPoint;
 		
 	}
 	
