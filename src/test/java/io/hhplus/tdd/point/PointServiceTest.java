@@ -148,5 +148,22 @@ public class PointServiceTest {
 		
 	}
 	
+	@Test
+	@DisplayName("음수 포인트를 사용했을때")
+	void chargeNegativeAmountShouldThrow() {
+
+		long id = 1L;
+		long currentPoint = 5000L;
+		long amountToUse = -1000L; // 음수 포인트
+
+		// userPointTable.selectById가 호출될 때 현재 포인트를 반환하도록 설정
+		UserPoint userPoint = new UserPoint(id, currentPoint, System.currentTimeMillis());
+		when(userPointTable.selectById(id)).thenReturn(userPoint);
+
+		assertThrows(IllegalArgumentException.class, () -> {
+			pointService.use(id, amountToUse);
+		});
+		
+	}
 	
 }

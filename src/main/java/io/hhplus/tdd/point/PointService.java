@@ -50,9 +50,13 @@ public class PointService {
 			throw new IllegalArgumentException("포인트가 부족합니다.");
 		}
 		
+		if(amount < 0) {
+			throw new IllegalArgumentException("포인트는 0미만으로 쓸 수 없습니다.");
+		}
+		
 		UserPoint useUserPoint = userPointTable.insertOrUpdate(id, currentPoint - amount);
 		
-		pointHistoryTable.insert(id, currentPoint - amount, TransactionType.USE, currentPoint);
+		pointHistoryTable.insert(id, currentPoint - amount, TransactionType.USE, System.currentTimeMillis());
 		
 		return useUserPoint;
 		
