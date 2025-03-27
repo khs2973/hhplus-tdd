@@ -53,7 +53,7 @@ public class PointServiceTest {
 	}
 	
 	@Test
-	@DisplayName("사용자 포인트 충전시 최대 충전량을 초과했을때")
+	@DisplayName("사용자 포인트 충전시 최대 충전량을 초과했을때 - 실패 케이스")
 	public void charge() {
 		
 		long id = 1L;
@@ -66,8 +66,26 @@ public class PointServiceTest {
 			pointService.charge(id, amount);
 		});
 		
+	}
+	
+	@Test
+	@DisplayName("사용자 포인트 충전 - 성공 케이스")
+	public void successCharge() {
 		
+		long id = 1L;
+		long amount = 2000;
+		long currentPoint = 1000;
+		long sumPoint = 3000;
 		
+		UserPoint beforePoint = new UserPoint(id, currentPoint, System.currentTimeMillis());
+		UserPoint afterPoint = new UserPoint(id, amount + currentPoint, System.currentTimeMillis());
+		
+		when(userPointTable.selectById(id)).thenReturn(beforePoint);
+		when(userPointTable.insertOrUpdate(id, sumPoint)).thenReturn(afterPoint);
+		
+		UserPoint chargePoint = pointService.charge(id, amount);
+		
+		assertEquals(sumPoint, chargePoint.point());
 	}
 	
 	@Test
@@ -83,6 +101,27 @@ public class PointServiceTest {
 		assertThrows(IllegalArgumentException.class, () -> {
 			pointService.use(id, amount);
 		});
+		
+	}
+	
+	@Test
+	@DisplayName("사용자 포인트 사용 - 성공 케이스")
+	public void successUse() {
+		
+		long id = 1L;
+		long amount = 1000;
+		long currentPoint = 5000;
+		long sumPoint = 4000;
+		
+		UserPoint beforePoint = new UserPoint(id, currentPoint, System.currentTimeMillis());
+		UserPoint afterPoint = new UserPoint(id, currentPoint - amount, System.currentTimeMillis());
+		
+		when(userPointTable.selectById(id)).thenReturn(beforePoint);
+		when(userPointTable.insertOrUpdate(id, sumPoint)).thenReturn(afterPoint);
+		
+		UserPoint useUserPoint = pointService.use(id, amount);
+		
+		assertEquals(sumPoint, useUserPoint.point());
 		
 	}
 	
